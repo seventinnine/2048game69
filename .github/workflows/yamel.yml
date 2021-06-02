@@ -17,18 +17,18 @@ jobs:
               uses: actions/cache@v2
               with:
                 path: $maven_packages_cache
-                key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-                restore-keys: |
-                    ${{ runner.os }}-maven-
+                key: ${{runner.os}}-build
                 
             - name: Checkout repository
               uses: actions/checkout@v2
               
             - name: Build Servlet
               run: mvn compile
-            - uses: actions/upload-artifact@master
+              
+            - name: Upload Artifact for next Jobs 
+              uses: actions/upload-artifact@master
               with:
-                name: target
+                name: target-$CI_COMMIT_SHA # target-69420d.zip
                 path: target/*
     
     
@@ -36,20 +36,7 @@ jobs:
         needs:
             - build
         runs-on: self-hosted
-        steps:
-            - name: Cache Maven Packages
-              uses: actions/cache@v2
-              with:
-                path: $maven_packages_cache
-                key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-                restore-keys: |
-                    ${{ runner.os }}-maven-
-                
-            - uses: actions/download-artifact@master
-              with:
-                name: target
-                path: target/*
-                
+        steps:                
             - name: Run Unit-Tests
               run: mvn test
             
@@ -65,20 +52,18 @@ jobs:
               uses: actions/cache@v2
               with:
                 path: $maven_packages_cache
-                key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-                restore-keys: |
-                    ${{ runner.os }}-maven-
+                key: ${{runner.os}}-build
                 
             - uses: actions/download-artifact@master
               with:
-                name: target
+                name: target-$CI_COMMIT_SHA # target-69420d.zip
                 path: target/*
                 
             - name: Create Package
               run: mvn package
             - uses: actions/upload-artifact@master
               with:
-                name: war
+                name: war-$CI_COMMIT_SHA # war-69420d.zip
                 path: target/*.war
     
     
