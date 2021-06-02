@@ -7,7 +7,7 @@ on:
    
 env:
     maven_packages_cache: ".m2/repository"
-    MAVEN_OPTS: "-Dmaven.repo.local=./$maven_packages_cache"
+    # MAVEN_OPTS: "-Dmaven.repo.local=./$maven_packages_cache"
    
 jobs:
     build:
@@ -25,10 +25,10 @@ jobs:
             - name: Build Servlet
               run: mvn compile
               
-            - name: Upload Artifact for next Jobs 
-              uses: actions/upload-artifact@master
+            - name: Upload Artifact for [test, package] 
+              uses: actions/upload-artifact@v2
               with:
-                name: target-$CI_COMMIT_SHA # target-69420d.zip
+                name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHA
                 path: target/*
     
     
@@ -51,26 +51,23 @@ jobs:
                 path: $maven_packages_cache
                 key: ${{runner.os}}-build
                 
-            - uses: actions/download-artifact@master
-              with:
-                name: target-$CI_COMMIT_SHA # target-69420d.zip
-                path: target/*
-                
             - name: Create Package
               run: mvn package
-            - uses: actions/upload-artifact@master
+              
+            - name: Upload Artifact for Deploy
+              uses: actions/upload-artifact@v2
               with:
-                name: war-$CI_COMMIT_SHA # war-69420d.zip
+                name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHA
                 path: target/*.war
     
     
-    deploy:
+    deploy_test:
         needs:
             - package
         runs-on: self-hosted
         environment:
-            name: test
-            url: http://localhost:8081/game2048
+            name: Super Cool Testing Environment
+            url: http://localhost:8080/game2048
         steps:
             - name: Start Servlet
               run: echo -e 'FROM tomcat:9.0.46-jdk11 \n COPY ./target/game2048.war /usr/local/tomcat/webapps'
