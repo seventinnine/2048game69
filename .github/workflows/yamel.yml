@@ -1,54 +1,99 @@
-name: deployment-workflow
-on: push
+name: yamel
+on:
+    push:
+        branches: [ master ]
 
+    workflow_dispatch:
+   
+env:
+    maven_packages_cache: ".m2/repository"
+   
 jobs:
-  build:
-    name: build
-    runs-on: self-hosted
-    steps:
-      - name: Cache Build Stuff
-        uses: actions/cache@v2
-        with:
-          path: ".m2/repository"
-          key: ${{runner.os}}-build
-      - uses: actions/checkout@v2
-      - run: mvn compile
-      - name: Upload build stuff for job 1
-        uses: actions/upload-artifact@v2
-        with:
-          name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHA # build-main-12534f4.zip
-          path: "target/*"
-
-  test:
-    name: test
-    runs-on: self-hosted
-    needs: build
-    steps:
-      - run: mvn test
-
-  package:
-    name: package
-    runs-on: self-hosted
-    needs: test
-    steps:
-      - name: Cache Package Stuff
-        uses: actions/cache@v2
-        with:
-          path: ".m2/repository"
-          key: ${{runner.os}}-package
-      - run: mvn package
-      - name: Package Artifact from maven
-        uses: actions/upload-artifact@v2
-        with:
-         name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHA # build-main-12534f4.zip
-         path: "target/*.war"
-
-  deploy_test:
-    name: deploy_test
-    runs-on: self-hosted
-    needs: package
-    environment:
-      name: test
-      url: http://localhost:8081/game2048
-    steps:
-      - run: echo -e 'FROM tomcat:9.0.46-jdk11 \n COPY ./target/game2048.war /usr/local/tomcat/webapps'
+    build:
+        runs-on: self-hosted
+        steps:
+            - name: Cache Maven Packages
+              uses: actions/cache@v2
+              with:
+                path: $maven_packages_cache
+                key: ${{runner.os}}-build
+                
+            - name: Checkout repository
+              uses: actions/checkout@v2
+              
+            - name: Build Servlet
+              run: mvn compile
+              
+            - name: Upload Artifact for [test, package] 
+              uses: actions/upload-artifact@v2
+              with:
+                name: target
+                path: "target/*"
+    
+    
+    test:
+        needs:
+            - build
+        runs-on: self-hosted
+        steps:
+            - name: Cache Maven Packages
+              uses: actions/cache@v2
+              with:
+                path: $maven_packages_cache
+                key: ${{runner.os}}-build
+                
+            - name: Get Stored Artifact for test
+              uses: actions/download-artifact@v2
+              with:
+                name: target
+                path: "target/*"
+                
+            - name: Run Unit-Tests
+              run: mvn test
+        
+    package:
+        needs:
+            - build
+        runs-on: self-hosted
+        steps:
+            - name: Cache Maven Packages
+              uses: actions/cache@v2
+              with:
+                path: $maven_packages_cache
+                key: ${{runner.os}}-build
+                
+            - name: Get Stored Artifact for package
+              uses: actions/download-artifact@v2
+              with:
+                name: target
+                path: "target/*"
+                
+            - name: Create Package
+              run: mvn package
+              
+            - name: Upload Artifact for deploy_test
+              uses: actions/upload-artifact@v2
+              with:
+                name: war
+                path: "target/*.war"
+    
+    
+    deploy_test:
+        needs:
+            - package
+        runs-on: self-hosted
+        environment:
+            name: Super Cool Testing Environment
+            url: http://localhost:8081/game2048
+        steps:
+            - name: Get Stored Artifact for deploy_test
+              uses: actions/download-artifact@v2
+              with:
+                name: war
+                path: "target/*.war"
+                
+            - name: Start Servlet
+              run: echo -e 'FROM tomcat:9.0.46-jdk11 \n COPY ./target/game2048.war /usr/local/tomcat/webapps'
+    
+            
+        
