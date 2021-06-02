@@ -36,7 +36,19 @@ jobs:
         needs:
             - build
         runs-on: self-hosted
-        steps:                    
+        steps:
+            - name: Cache Maven Packages
+              uses: actions/cache@v2
+              with:
+                path: $maven_packages_cache
+                key: ${{runner.os}}-build
+                
+            - name: Get Stored Artifact for test
+              uses: actions/download-artifact@v2
+              with:
+                name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHA
+                path: target/*
+                
             - name: Run Unit-Tests
               run: mvn test
         
@@ -51,10 +63,16 @@ jobs:
                 path: $maven_packages_cache
                 key: ${{runner.os}}-build
                 
+            - name: Get Stored Artifact for package
+              uses: actions/download-artifact@v2
+              with:
+                name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHA
+                path: target/*
+                
             - name: Create Package
               run: mvn package
               
-            - name: Upload Artifact for Deploy
+            - name: Upload Artifact for deploy_test
               uses: actions/upload-artifact@v2
               with:
                 name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHA
@@ -69,6 +87,12 @@ jobs:
             name: Super Cool Testing Environment
             url: http://localhost:8080/game2048
         steps:
+            - name: Get Stored Artifact for deploy_test
+              uses: actions/download-artifact@v2
+              with:
+                name: $CI_JOB_NAME-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHA
+                path: target/*.war
+                
             - name: Start Servlet
               run: echo -e 'FROM tomcat:9.0.46-jdk11 \n COPY ./target/game2048.war /usr/local/tomcat/webapps'
     
