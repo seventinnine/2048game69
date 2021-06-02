@@ -83,7 +83,7 @@ jobs:
         runs-on: self-hosted
         environment:
             name: Super Cool Testing Environment
-            url: http://localhost:8080/game204869
+            url: http://localhost:8081/game2048
         steps:
             - name: Get Stored Artifact for deploy_test
               uses: actions/download-artifact@v2
