@@ -23,7 +23,7 @@ jobs:
               
             - name: Build Servlet
               run: mvn compile
-              uses: actions/upload-artifact@master
+            - uses: actions/upload-artifact@master
               with:
                 name: target
                 path: target/*
@@ -67,7 +67,7 @@ jobs:
                 
             - name: Create Package
               run: mvn package
-              uses: actions/upload-artifact@master
+            - uses: actions/upload-artifact@master
               with:
                 name: war
                 path: target/*.war
