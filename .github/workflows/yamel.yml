@@ -36,13 +36,10 @@ jobs:
         needs:
             - build
         runs-on: self-hosted
-        steps:                
+        steps:                    
             - name: Run Unit-Tests
               run: mvn test
-            
-    
-    
-    
+        
     package:
         needs:
             - build
@@ -67,10 +64,16 @@ jobs:
                 path: target/*.war
     
     
-    #deploy:
-    #    needs:
-    #        - package
-    #    runs-on: self-hosted
-    #    steps:
+    deploy:
+        needs:
+            - package
+        runs-on: self-hosted
+        environment:
+            name: test
+            url: http://localhost:8081/game2048
+        steps:
+            - name: Start Servlet
+              run: echo -e 'FROM tomcat:9.0.46-jdk11 \n COPY ./target/game2048.war /usr/local/tomcat/webapps'
+    
             
         
