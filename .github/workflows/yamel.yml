@@ -6,8 +6,8 @@ on:
     workflow_dispatch:
    
 env:
-    maven_packages_cache: .m2/repository
-    MAVEN_OPTS: -Dmaven.repo.local=./$maven_packages_cache
+    # maven_packages_cache: .m2/repository
+    # MAVEN_OPTS: -Dmaven.repo.local=./$maven_packages_cache
    
 jobs:
     build:
@@ -16,7 +16,7 @@ jobs:
             - name: Cache Maven Packages
               uses: actions/cache@v2
               with:
-                path: $maven_packages_cache
+                path: ".m2/repository"
                 key: ${{runner.os}}-build
                 
             - name: Checkout repository
@@ -29,7 +29,7 @@ jobs:
               uses: actions/upload-artifact@v2
               with:
                 name: target-$GITHUB_SHA
-                path: target/*
+                path: "target/*"
     
     
     test:
@@ -40,14 +40,14 @@ jobs:
             - name: Cache Maven Packages
               uses: actions/cache@v2
               with:
-                path: $maven_packages_cache
+                path: ".m2/repository"
                 key: ${{runner.os}}-build
                 
             - name: Get Stored Artifact for test
               uses: actions/download-artifact@v2
               with:
                 name: target-$GITHUB_SHA
-                path: target/*
+                path: "target/*"
                 
             - name: Run Unit-Tests
               run: mvn test
@@ -60,14 +60,14 @@ jobs:
             - name: Cache Maven Packages
               uses: actions/cache@v2
               with:
-                path: $maven_packages_cache
+                path: ".m2/repository"
                 key: ${{runner.os}}-build
                 
             - name: Get Stored Artifact for package
               uses: actions/download-artifact@v2
               with:
                 name: target-$GITHUB_SHA
-                path: target/*
+                path: "target/*"
                 
             - name: Create Package
               run: mvn package
@@ -76,7 +76,7 @@ jobs:
               uses: actions/upload-artifact@v2
               with:
                 name: war-$GITHUB_SHA
-                path: target/*.war
+                path: "target/*.war"
     
     
     deploy_test:
@@ -91,7 +91,7 @@ jobs:
               uses: actions/download-artifact@v2
               with:
                 name: war-$GITHUB_SHA
-                path: target/*.war
+                path: "target/*.war"
                 
             - name: Start Servlet
               run: echo -e 'FROM tomcat:9.0.46-jdk11 \n COPY ./target/game2048.war /usr/local/tomcat/webapps'
