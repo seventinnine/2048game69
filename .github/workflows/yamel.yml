@@ -1,0 +1,82 @@
+name: yamel
+on:
+    push:
+        branches: [ master ]
+
+    workflow_dispatch:
+   
+env:
+    maven_packages_cache: ".m2/repository"
+    MAVEN_OPTS: "-Dmaven.repo.local=./$maven_packages_cache"
+   
+jobs:
+    build:
+        runs-on: self-hosted
+        steps:
+            - name: Cache Maven Packages
+              uses: actions/cache@v2
+              with:
+                path: $maven_packages_cache
+                
+            - name: Checkout repository
+              uses: actions/checkout@v2
+              
+            - name: Build Servlet
+              run: mvn compile
+              uses: actions/upload-artifact@master
+              with:
+                name: target
+                path: target/*
+    
+    
+    test:
+        needs:
+            - build
+        runs-on: self-hosted
+        steps:
+            - name: Cache Maven Packages
+              uses: actions/cache@v2
+              with:
+                path: $maven_packages_cache
+                
+            - uses: actions/download-artifact@master
+              with:
+                name: target
+                path: target/*
+                
+            - name: Run Unit-Tests
+              run: mvn test
+            
+    
+    
+    
+    package:
+        needs:
+            - build
+        runs-on: self-hosted
+        steps:
+            - name: Cache Maven Packages
+              uses: actions/cache@v2
+              with:
+                path: $maven_packages_cache
+                
+            - uses: actions/download-artifact@master
+              with:
+                name: target
+                path: target/*
+                
+            - name: Create Package
+              run: mvn package
+              uses: actions/upload-artifact@master
+              with:
+                name: war
+                path: target/*.war
+    
+    
+    #deploy:
+    #    needs:
+    #        - package
+    #    runs-on: self-hosted
+    #    steps:
+            
+        
