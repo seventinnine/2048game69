@@ -69,7 +69,7 @@ jobs:
                 path: "target/*"
                 
             - name: Create Package
-              run: mvn package
+              run: mvn package -Dmaven.test.skip=true
               
             - name: Upload Artifact for deploy_test
               uses: actions/upload-artifact@v2
