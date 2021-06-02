@@ -77,7 +77,6 @@ jobs:
                 name: war
                 path: "target/*.war"
     
-    
     deploy_test:
         needs:
             - package
