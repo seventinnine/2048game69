@@ -92,4 +92,4 @@ jobs:
                 path: "target/*.war"
                 
             - name: Start Servlet
-              run: cp -f ./target/game2048.war /usr/local/tomcat/webapps'
+              run: cp -f ./target/game2048.war /usr/local/tomcat/webapps
