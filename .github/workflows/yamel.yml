@@ -42,12 +42,6 @@ jobs:
                 path: $maven_packages_cache
                 key: ${{runner.os}}-build
                 
-            - name: Get Stored Artifact for test
-              uses: actions/download-artifact@v2
-              with:
-                name: target
-                path: "target/*"
-                
             - name: Run Unit-Tests
               run: mvn test
         
@@ -61,12 +55,6 @@ jobs:
               with:
                 path: $maven_packages_cache
                 key: ${{runner.os}}-build
-                
-            - name: Get Stored Artifact for package
-              uses: actions/download-artifact@v2
-              with:
-                name: target
-                path: "target/*"
                 
             - name: Create Package
               run: mvn package -Dmaven.test.skip=true
@@ -85,11 +73,6 @@ jobs:
             name: Super Cool Testing Environment
             url: http://localhost:8081/game2048
         steps:
-            - name: Get Stored Artifact for deploy_test
-              uses: actions/download-artifact@v2
-              with:
-                name: war
-                path: "target/*.war"
                 
             - name: Start Servlet
               run: cp -f ./target/game2048.war /usr/local/tomcat/webapps
